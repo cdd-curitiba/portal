@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Calculadora Aderido</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7KEPR8W9E0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7KEPR8W9E0');
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0c10;--surface:#12151c;--surface2:#1a1f2b;--border:#252d3d;
+  --green:#00e5a0;--orange:#ff6b35;--red:#ff4d6d;--yellow:#ffd166;
+  --text:#e8edf5;--muted:#5a6580;--font:'Syne',sans-serif;--mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;padding:0 0 80px}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse at 20% 20%,rgba(0,229,160,.04) 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(255,107,53,.04) 0%,transparent 60%);pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:0 16px}
+
+header{padding:32px 0 24px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.header-tag{font-family:var(--mono);font-size:.68rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+header h1{font-size:1.9rem;font-weight:800;line-height:1.1;background:linear-gradient(135deg,#e8edf5 30%,var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header p{margin-top:8px;font-size:.82rem;color:var(--muted);line-height:1.5}
+
+.section{margin-bottom:18px}
+.section-label{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.field-wrap{position:relative}
+.field-prefix{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.8rem;color:var(--muted);pointer-events:none}
+select,input[type=number]{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);outline:none;transition:border-color .2s;font-family:var(--mono);font-size:.88rem}
+select{padding:10px 12px;cursor:pointer}
+select:focus,input[type=number]:focus{border-color:var(--green)}
+select option{background:#1a1f2b}
+input[type=number]{padding:10px 10px 10px 28px;-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input.no-prefix{padding-left:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ===== BOXES DE ADERIDO ===== */
+.pi-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:18px;display:none}
+.pi-wrap.show{display:block}
+.pi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.pi-nome{font-size:.9rem;font-weight:700}
+.pi-unid{font-family:var(--mono);font-size:.72rem;color:var(--green);background:rgba(0,229,160,.1);padding:2px 8px;border-radius:4px}
+
+/* NAD box — referência */
+.nad-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px}
+.nad-title{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:8px}
+.nad-row{display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px}
+.nad-row:last-child{margin-bottom:0}
+.nad-lbl{color:var(--muted)}
+.nad-val{font-family:var(--mono);color:var(--red)}
+
+/* Aderido cards clicáveis */
+.aderido-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.aderido-card{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:13px;cursor:pointer;transition:all .2s;user-select:none}
+.aderido-card:hover{border-color:#3a4060}
+.aderido-card.selected-reg{border-color:var(--green);background:rgba(0,229,160,.06)}
+.aderido-card.selected-est{border-color:var(--orange);background:rgba(255,107,53,.06)}
+.aderido-card.disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+.ac-title{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+.ac-title.reg{color:var(--green)}
+.ac-title.est{color:var(--orange)}
+.ac-row{display:flex;justify-content:space-between;font-size:.76rem;margin-bottom:5px}
+.ac-row:last-child{margin-bottom:0}
+.ac-lbl{color:var(--muted)}
+.ac-val{font-family:var(--mono);color:var(--text);font-weight:500}
+.ac-val.green{color:var(--green)}
+.ac-val.orange{color:var(--orange)}
+.ac-na{display:flex;align-items:center;justify-content:center;height:70px;font-size:.72rem;color:var(--muted);font-style:italic;text-align:center}
+.selected-indicator{display:none;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06)}
+.aderido-card.selected-reg .selected-indicator,.aderido-card.selected-est .selected-indicator{display:block}
+.selected-indicator.reg{color:var(--green)}
+.selected-indicator.est{color:var(--orange)}
+
+/* Status */
+.status-box{border-radius:8px;padding:10px 14px;font-size:.8rem;font-weight:600;display:none;margin-top:10px}
+.status-box.show{display:block}
+.status-box.ok-reg{background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.3);color:var(--green)}
+.status-box.ok-est{background:rgba(255,107,53,.1);border:1px solid rgba(255,107,53,.3);color:var(--orange)}
+.status-box.nok{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.3);color:var(--red)}
+
+/* Botão */
+.btn{width:100%;background:var(--green);color:#000;border:none;border-radius:10px;padding:14px;font-family:var(--font);font-size:1rem;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .15s,transform .1s;letter-spacing:.02em}
+.btn:hover{opacity:.9}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+
+/* ===== RESULTADO ===== */
+#resultado{margin-top:28px;display:none}
+#resultado.show{display:block}
+.res-header{font-family:var(--mono);font-size:.65rem;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.res-header::after{content:'';flex:1;height:1px;background:var(--green);opacity:.3}
+
+/* Cards topo: Lucro Atual | Lucro c/ Aderido */
+.lucro-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.lucro-card{border-radius:10px;padding:16px;border:1px solid var(--border)}
+.lucro-card.atual{background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.35)}
+.lucro-card.aderido{background:var(--surface2);border-color:var(--border)}
+.lucro-card.aderido.melhor{background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.35)}
+.lucro-card.aderido.pior{background:rgba(255,77,109,.07);border-color:rgba(255,77,109,.35)}
+.lc-label{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:700;margin-bottom:8px}
+.lc-val{font-family:var(--mono);font-size:1.7rem;font-weight:500;line-height:1}
+.lc-val.green{color:var(--green)}
+.lc-val.red{color:var(--red)}
+.lc-sub{font-size:.68rem;color:var(--muted);margin-top:5px;line-height:1.4}
+
+/* Box de volume incremental */
+.vol-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px}
+.vol-box-title{font-family:var(--mono);font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:12px}
+.vol-big{font-family:var(--mono);font-size:2.8rem;font-weight:500;line-height:1;margin-bottom:6px}
+.vol-big.orange{color:var(--orange)}
+.vol-big.green{color:var(--green)}
+.vol-big.red{color:var(--red)}
+.vol-sub{font-size:.78rem;color:var(--muted);margin-bottom:14px;line-height:1.4}
+.vol-divider{height:1px;background:var(--border);margin:14px 0}
+.vol-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-size:.78rem}
+.vol-row:last-child{margin-bottom:0}
+.vol-lbl{color:var(--muted)}
+.vol-val{font-family:var(--mono);font-size:.8rem}
+.vol-val.green{color:var(--green)}
+.vol-val.red{color:var(--red)}
+
+.tip{margin-top:12px;background:rgba(0,229,160,.07);border:1px solid rgba(0,229,160,.2);border-radius:8px;padding:12px 14px;font-size:.78rem;color:var(--green);line-height:1.5}
+.tip strong{font-weight:700}
+.alert-box{background:rgba(255,209,102,.07);border:1px solid rgba(255,209,102,.25);border-radius:8px;padding:10px 14px;font-size:.78rem;color:var(--yellow);margin-top:10px;line-height:1.5;display:none}
+.reset-btn{width:100%;background:transparent;border:1px solid var(--border);border-radius:8px;padding:10px;font-family:var(--font);font-size:.82rem;color:var(--muted);cursor:pointer;margin-top:12px;transition:border-color .2s,color .2s}
+.reset-btn:hover{border-color:var(--muted);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="header-tag">Ferramenta de Vendas</div>
+  <h1>Calculadora<br>de Aderido</h1>
+  <p>Selecione o produto e o tipo de aderido desejado. Informe o preço e o volume — o resto é automático.</p>
+</header>
+
+<!-- STEP 1 -->
+<div class="section">
+  <div class="section-label">1 · Selecione o produto</div>
+  <div class="field"><label>Marca</label>
+    <select id="selMarca" onchange="onMarcaChange()">
+      <option value="">— escolha a marca —</option>
+    </select>
+  </div>
+  <div style="height:10px"></div>
+  <div class="field"><label>Produto</label>
+    <select id="selProduto" onchange="onProdutoChange()" disabled>
+      <option value="">— escolha o produto —</option>
+    </select>
+  </div>
+</div>
+
+<!-- STEP 2: boxes de aderido -->
+<div class="pi-wrap" id="piWrap">
+  <div class="pi-header">
+    <span class="pi-nome" id="piNome">—</span>
+    <span class="pi-unid" id="piUnid">—</span>
+  </div>
+
+  <!-- NAD: referência -->
+  <div class="nad-box">
+    <div class="nad-title">Não Aderido</div>
+    <div class="nad-row"><span class="nad-lbl">Custo/un (TTV NAD)</span><span class="nad-val" id="nad-un">—</span></div>
+    <div class="nad-row"><span class="nad-lbl">Custo/cx (TTV NAD)</span><span class="nad-val" id="nad-cx">—</span></div>
+  </div>
+
+  <!-- Cards clicáveis -->
+  <div class="section-label" style="margin-top:12px">2 · Escolha o aderido para calcular</div>
+  <div class="aderido-cards">
+    <div class="aderido-card" id="cardReg" onclick="selectTipo('reg')">
+      <div class="ac-title reg">Aderido Regular</div>
+      <div class="ac-row"><span class="ac-lbl">Preço de Venda (TTC)</span><span class="ac-val green" id="reg-ttc">—</span></div>
+      <div class="ac-row"><span class="ac-lbl">Custo/un (TTV)</span><span class="ac-val" id="reg-un">—</span></div>
+      <div class="ac-row"><span class="ac-lbl">Custo/cx (TTV)</span><span class="ac-val" id="reg-cx">—</span></div>
+      <div class="selected-indicator reg">✓ Selecionado</div>
+    </div>
+    <div class="aderido-card" id="cardEst" onclick="selectTipo('est')">
+      <div class="ac-title est">Aderido Estratégico</div>
+      <div id="estContent"></div>
+      <div class="selected-indicator est">✓ Selecionado</div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3: dados do cliente -->
+<div class="section" id="dadosSection" style="display:none">
+  <div class="section-label">3 · Dados do cliente</div>
+  <div class="grid2">
+    <div class="field"><label>Preço que o cliente vende (un.)</label>
+      <div class="field-wrap">
+        <span class="field-prefix">R$</span>
+        <input type="number" id="precoAtual" step="0.01" min="0" placeholder="0,00" oninput="onPrecoChange()">
+      </div>
+    </div>
+    <div class="field"><label>Volume atual (caixas/mês)</label>
+      <div class="field-wrap">
+        <input type="number" id="volumeAtual" step="1" min="0" placeholder="0" class="no-prefix" oninput="checkBtn()">
+      </div>
+    </div>
+  </div>
+  <div class="status-box" id="statusBox"></div>
+</div>
+
+<button class="btn" id="btnCalc" onclick="calcular()" disabled>Calcular →</button>
+
+<!-- RESULTADO -->
+<div id="resultado">
+  <div class="res-header">Análise de Rentabilidade</div>
+
+  <!-- Cards: Lucro Atual | Lucro c/ Aderido -->
+  <div class="lucro-cards">
+    <div class="lucro-card atual">
+      <div class="lc-label">Lucro Atual</div>
+      <div class="lc-val green" id="r_lucroAtual">—</div>
+      <div class="lc-sub" id="r_lucroAtualSub">—</div>
+    </div>
+    <div class="lucro-card aderido" id="r_lucroAderidoCard">
+      <div class="lc-label" id="r_lucroAderidoLabel">Lucro c/ Aderido</div>
+      <div class="lc-val" id="r_lucroAderido">—</div>
+      <div class="lc-sub" id="r_lucroAderidoSub">mesmo volume</div>
+    </div>
+  </div>
+
+  <!-- Box Volume Incremental -->
+  <div class="vol-box">
+    <div class="vol-box-title">Volume Incremental Necessário</div>
+    <div class="vol-big" id="r_incremento">—</div>
+    <div class="vol-sub" id="r_incrementoSub">—</div>
+    <div class="vol-divider"></div>
+    <div class="vol-row"><span class="vol-lbl">Margem atual (R$/cx)</span><span class="vol-val green" id="r_margemAtual">—</span></div>
+    <div class="vol-row"><span class="vol-lbl">Margem aderida (R$/cx)</span><span class="vol-val" id="r_margemAderida">—</span></div>
+    <div class="vol-row"><span class="vol-lbl">Diferença por caixa</span><span class="vol-val" id="r_diffCx">—</span></div>
+    <div class="vol-row"><span class="vol-lbl">Diferença total (mesmo vol.)</span><span class="vol-val" id="r_diffTotal">—</span></div>
+    <div class="vol-row"><span class="vol-lbl">Volume total necessário</span><span class="vol-val" id="r_volTotal">—</span></div>
+    <div class="tip" id="rTip"></div>
+  </div>
+
+  <div class="alert-box" id="rAlert"></div>
+  <button class="reset-btn" onclick="resetar()">↩ Nova consulta</button>
+</div>
+</div>
+
+<script>
+const P = [
+  {marca:"Antarctica Pilsen", nome:"Antarctica 300ML",   unid:23, ttc_r:4.00, ttc_e:null,  ttv:2.50, pack_r:57.50,  ttv_n:2.70, pack_n:62.10},
+  {marca:"Antarctica Pilsen", nome:"Antarctica 600ML",   unid:24, ttc_r:8.00, ttc_e:10.00, ttv:5.71, pack_r:137.04, ttv_n:6.21, pack_n:149.04},
+  {marca:"Antarctica Pilsen", nome:"Antarctica 1L",      unid:12, ttc_r:10.00,ttc_e:11.00, ttv:6.34, pack_r:76.08,  ttv_n:6.94, pack_n:83.28},
+  {marca:"Brahma Chopp",      nome:"Brahma Chopp 300ML", unid:23, ttc_r:4.00, ttc_e:null,  ttv:2.50, pack_r:57.50,  ttv_n:2.70, pack_n:62.10},
+  {marca:"Brahma Chopp",      nome:"Brahma Chopp 600ML", unid:24, ttc_r:9.00, ttc_e:11.00, ttv:6.38, pack_r:153.12, ttv_n:6.88, pack_n:165.12},
+  {marca:"Brahma Chopp",      nome:"Brahma Chopp 1L",    unid:12, ttc_r:11.00,ttc_e:12.00, ttv:7.19, pack_r:86.28,  ttv_n:7.79, pack_n:93.48},
+  {marca:"Brahma Chopp Zero", nome:"Brahma Chopp Zero 300ML", unid:23, ttc_r:4.00, ttc_e:null, ttv:2.66, pack_r:61.18, ttv_n:2.99, pack_n:68.77},
+  {marca:"Budweiser",         nome:"Budweiser 300ML",    unid:23, ttc_r:4.00, ttc_e:null,  ttv:2.66, pack_r:61.18,  ttv_n:2.66, pack_n:61.18},
+  {marca:"Budweiser",         nome:"Budweiser 600ML",    unid:24, ttc_r:10.00,ttc_e:12.00, ttv:6.76, pack_r:162.24, ttv_n:7.36, pack_n:176.64},
+  {marca:"Budweiser",         nome:"Budweiser 1L",       unid:12, ttc_r:12.00,ttc_e:13.00, ttv:7.74, pack_r:92.88,  ttv_n:8.34, pack_n:100.08},
+  {marca:"Corona",            nome:"Corona 600ML",       unid:24, ttc_r:16.00,ttc_e:null,  ttv:9.00, pack_r:216.00, ttv_n:9.00, pack_n:216.00},
+  {marca:"Corona",            nome:"Corona Long Neck 330ML", unid:28, ttc_r:11.00,ttc_e:null, ttv:5.64, pack_r:157.92, ttv_n:5.64, pack_n:157.92},
+  {marca:"Original",          nome:"Original 300ML",     unid:23, ttc_r:4.50, ttc_e:null,  ttv:2.95, pack_r:67.85,  ttv_n:3.15, pack_n:72.45},
+  {marca:"Original",          nome:"Original 600ML",     unid:24, ttc_r:12.00,ttc_e:14.00, ttv:7.23, pack_r:173.52, ttv_n:7.83, pack_n:187.92},
+  {marca:"Original",          nome:"Original 1L",        unid:12, ttc_r:14.00,ttc_e:15.00, ttv:8.86, pack_r:106.32, ttv_n:9.46, pack_n:113.52},
+  {marca:"Serramalte",        nome:"Serramalte 600ML",   unid:24, ttc_r:12.00,ttc_e:null,  ttv:7.23, pack_r:173.52, ttv_n:7.83, pack_n:187.92},
+  {marca:"Skol",              nome:"Skol 300ML",         unid:23, ttc_r:4.00, ttc_e:null,  ttv:2.50, pack_r:57.50,  ttv_n:2.70, pack_n:62.10},
+  {marca:"Skol",              nome:"Skol 600ML",         unid:24, ttc_r:8.00, ttc_e:10.00, ttv:5.63, pack_r:135.21, ttv_n:6.13, pack_n:147.21},
+  {marca:"Skol",              nome:"Skol 1L",            unid:12, ttc_r:10.00,ttc_e:11.00, ttv:6.85, pack_r:82.20,  ttv_n:7.45, pack_n:89.40},
+  {marca:"Spaten",            nome:"Spaten 600ML",       unid:24, ttc_r:12.00,ttc_e:14.00, ttv:7.23, pack_r:173.52, ttv_n:7.83, pack_n:187.92},
+  {marca:"Stella Artois",     nome:"Stella Artois 600ML",unid:24, ttc_r:13.00,ttc_e:null,  ttv:7.93, pack_r:190.32, ttv_n:7.93, pack_n:190.32},
+];
+
+let prod = null, tipo = null;
+
+// Popula marcas
+const marcas = [...new Set(P.map(p=>p.marca))].sort();
+const selM = document.getElementById('selMarca');
+marcas.forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; selM.appendChild(o); });
+
+function R(v){ return 'R$ '+v.toFixed(2).replace('.',','); }
+function fmt(v){ return 'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtN(v){ return v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+
+function onMarcaChange(){
+  const marca=selM.value;
+  const selP=document.getElementById('selProduto');
+  selP.innerHTML='<option value="">— escolha o produto —</option>';
+  selP.disabled=!marca;
+  if(!marca) return;
+  P.forEach((p,i)=>{ if(p.marca!==marca) return; const o=document.createElement('option'); o.value=i; o.textContent=p.nome; selP.appendChild(o); });
+  resetAll();
+}
+
+function onProdutoChange(){
+  const idx=document.getElementById('selProduto').value;
+  if(!idx){ resetAll(); return; }
+  prod=P[parseInt(idx)]; tipo=null;
+
+  document.getElementById('piNome').textContent=prod.nome;
+  document.getElementById('piUnid').textContent=prod.unid+' un/cx';
+
+  // NAD
+  document.getElementById('nad-un').textContent=R(prod.ttv_n)+'/un';
+  document.getElementById('nad-cx').textContent=R(prod.pack_n)+'/cx';
+
+  // Regular
+  document.getElementById('reg-ttc').textContent=R(prod.ttc_r)+'/un';
+  document.getElementById('reg-un').textContent=R(prod.ttv)+'/un';
+  document.getElementById('reg-cx').textContent=R(prod.pack_r);
+
+  // Estratégico
+  const estEl=document.getElementById('estContent');
+  const cardEst=document.getElementById('cardEst');
+  if(prod.ttc_e){
+    estEl.innerHTML=`
+      <div class="ac-row"><span class="ac-lbl">Preço de Venda (TTC)</span><span class="ac-val orange">${R(prod.ttc_e)}/un</span></div>
+      <div class="ac-row"><span class="ac-lbl">Custo/un (TTV)</span><span class="ac-val">${R(prod.ttv)}/un</span></div>
+      <div class="ac-row"><span class="ac-lbl">Custo/cx (TTV)</span><span class="ac-val">${R(prod.pack_r)}</span></div>`;
+    cardEst.classList.remove('disabled');
+  } else {
+    estEl.innerHTML='<div class="ac-na">Não disponível<br>para este produto</div>';
+    cardEst.classList.add('disabled');
+  }
+
+  // Reset seleção
+  document.getElementById('cardReg').className='aderido-card';
+  document.getElementById('cardEst').className='aderido-card'+(prod.ttc_e?'':' disabled');
+
+  document.getElementById('piWrap').classList.add('show');
+  document.getElementById('dadosSection').style.display='none';
+  document.getElementById('resultado').style.display='none';
+  document.getElementById('resultado').classList.remove('show');
+  document.getElementById('precoAtual').value='';
+  document.getElementById('volumeAtual').value='';
+  document.getElementById('statusBox').className='status-box';
+  document.getElementById('btnCalc').disabled=true;
+}
+
+function selectTipo(t){
+  tipo=t;
+  document.getElementById('cardReg').className='aderido-card'+(t==='reg'?' selected-reg':'');
+  document.getElementById('cardEst').className='aderido-card'+(t==='est'?' selected-est':'')+(prod&&prod.ttc_e?'':' disabled');
+  document.getElementById('dadosSection').style.display='block';
+  onPrecoChange();
+}
+
+function onPrecoChange(){
+  if(!prod||!tipo) return;
+  const preco=parseFloat(document.getElementById('precoAtual').value);
+  const el=document.getElementById('statusBox');
+  if(!preco){ el.className='status-box'; checkBtn(); return; }
+
+  // Verifica ambos independente do tipo selecionado
+  const atingeReg = Math.abs(preco - prod.ttc_r) < 0.001;
+  const atingeEst = prod.ttc_e && Math.abs(preco - prod.ttc_e) < 0.001;
+
+  if(atingeEst){
+    el.className='status-box show ok-est';
+    el.textContent='✓ Cliente atinge o Aderido Estratégico (TTC R$ '+prod.ttc_e.toFixed(2).replace('.',',')+'/un)';
+  } else if(atingeReg){
+    el.className='status-box show ok-reg';
+    el.textContent='✓ Cliente atinge o Aderido Regular (TTC R$ '+prod.ttc_r.toFixed(2).replace('.',',')+'/un)';
+  } else {
+    el.className='status-box';
+  }
+  checkBtn();
+}
+
+function checkBtn(){
+  const pa=parseFloat(document.getElementById('precoAtual').value);
+  const va=parseFloat(document.getElementById('volumeAtual').value);
+  document.getElementById('btnCalc').disabled=!(prod&&tipo&&pa>0&&va>0);
+}
+
+function calcular(){
+  const precoAtualUn=parseFloat(document.getElementById('precoAtual').value);
+  const vol=parseFloat(document.getElementById('volumeAtual').value);
+  const unid=prod.unid;
+  const label=tipo==='est'?'Aderido Estratégico':'Aderido Regular';
+  const ttcAderido=tipo==='est'?prod.ttc_e:prod.ttc_r;
+
+  const packNAD=prod.pack_n;
+  const packAd=prod.pack_r;
+
+  // Lucro ATUAL: cliente vende ao preço atual, paga custo NAD
+  const receitaAtualCx = precoAtualUn * unid;
+  const margemAtualCx  = receitaAtualCx - packNAD;
+  const lucroAtual     = margemAtualCx * vol;
+
+  // Lucro ADERIDO: cliente vende ao TTC do aderido, paga custo aderido
+  const receitaAdCx = ttcAderido * unid;
+  const margemAdCx  = receitaAdCx - packAd;
+  const lucroAd     = margemAdCx * vol;
+
+  // Diferença: perda = lucroAtual - lucroAd (positivo = cliente perde ao aderir)
+  const diff = lucroAtual - lucroAd;
+  const ganha = lucroAd >= lucroAtual;
+
+  // Volume incremental: quantas caixas a mais vender no aderido para empatar lucroAtual
+  let incremento = 0;
+  if(!ganha && margemAdCx > 0){
+    incremento = Math.ceil(diff / margemAdCx);
+  }
+
+  // Card Lucro Atual
+  document.getElementById('r_lucroAtual').textContent=fmt(lucroAtual);
+  document.getElementById('r_lucroAtual').className='lc-val '+(lucroAtual>=0?'green':'red');
+  document.getElementById('r_lucroAtualSub').textContent=fmtN(vol)+' cx × '+fmt(margemAtualCx)+'/cx';
+
+  // Card Lucro c/ Aderido
+  const adCard=document.getElementById('r_lucroAderidoCard');
+  adCard.className='lucro-card aderido '+(ganha?'melhor':'pior');
+  document.getElementById('r_lucroAderidoLabel').textContent='Lucro c/ '+label;
+  const adVal=document.getElementById('r_lucroAderido');
+  adVal.textContent=fmt(lucroAd);
+  adVal.className='lc-val '+(ganha?'green':'red');
+  document.getElementById('r_lucroAderidoSub').textContent=fmtN(vol)+' cx × '+fmt(margemAdCx)+'/cx';
+
+  // Volume incremental
+  const incEl=document.getElementById('r_incremento');
+  const incSub=document.getElementById('r_incrementoSub');
+  if(ganha){
+    incEl.textContent='0'; incEl.className='vol-big green';
+    incSub.textContent='caixas incrementais — aderir já é mais lucrativo!';
+  } else if(margemAdCx<=0){
+    incEl.textContent='∞'; incEl.className='vol-big red';
+    incSub.textContent='Margem negativa com o aderido';
+  } else {
+    incEl.textContent='+'+fmtN(incremento); incEl.className='vol-big orange';
+    incSub.textContent='caixas a mais/mês para ter o mesmo lucro de hoje';
+  }
+
+  // Linhas de detalhe
+  document.getElementById('r_margemAtual').textContent=fmt(margemAtualCx);
+  document.getElementById('r_margemAtual').className='vol-val '+(margemAtualCx>=0?'green':'red');
+  document.getElementById('r_margemAderida').textContent=fmt(margemAdCx);
+  document.getElementById('r_margemAderida').className='vol-val '+(margemAdCx>=margemAtualCx?'green':'red');
+
+  const diffCx=Math.abs(margemAdCx-margemAtualCx);
+  const dcEl=document.getElementById('r_diffCx');
+  dcEl.textContent=(ganha?'+ ':'-')+fmt(diffCx);
+  dcEl.className='vol-val '+(ganha?'green':'red');
+
+  const dtEl=document.getElementById('r_diffTotal');
+  dtEl.textContent=(ganha?'+ ':'-')+fmt(Math.abs(diff));
+  dtEl.className='vol-val '+(ganha?'green':'red');
+
+  document.getElementById('r_volTotal').textContent=fmtN(vol+incremento)+' caixas/mês';
+
+  // Tip
+  const tip=document.getElementById('rTip');
+  const alertEl=document.getElementById('rAlert');
+  alertEl.style.display='none';
+
+  if(ganha){
+    tip.innerHTML='<strong>Ótimo negócio!</strong> Vendendo a R$ '+ttcAderido.toFixed(2).replace('.',',')+'/un no aderido, o cliente lucra <strong>'+fmt(lucroAd-lucroAtual)+' a mais por mês</strong> sem precisar aumentar o volume.';
+  } else if(margemAdCx>0){
+    tip.innerHTML='<strong>Resumo:</strong> Hoje o cliente vende a R$ '+precoAtualUn.toFixed(2).replace('.',',')+'/un e lucra '+fmt(lucroAtual)+'/mês. No '+label+' (TTC R$ '+ttcAderido.toFixed(2).replace('.',',')+'/un), lucraria '+fmt(lucroAd)+'/mês — diferença de '+fmt(Math.abs(diff))+'. Para empatar, precisa passar de <strong>'+fmtN(vol)+' para '+fmtN(vol+incremento)+' caixas/mês</strong>.';
+  } else {
+    tip.innerHTML='<strong>Atenção:</strong> O TTC do aderido não cobre o custo. Margem negativa.';
+  }
+
+  const res=document.getElementById('resultado');
+  res.style.display='block';
+  res.classList.add('show');
+  res.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function resetAll(){
+  prod=null; tipo=null;
+  document.getElementById('piWrap').classList.remove('show');
+  document.getElementById('dadosSection').style.display='none';
+  document.getElementById('resultado').style.display='none';
+  document.getElementById('resultado').classList.remove('show');
+  document.getElementById('statusBox').className='status-box';
+  document.getElementById('btnCalc').disabled=true;
+}
+
+function resetar(){
+  document.getElementById('selMarca').value='';
+  document.getElementById('selProduto').innerHTML='<option value="">— escolha o produto —</option>';
+  document.getElementById('selProduto').disabled=true;
+  document.getElementById('precoAtual').value='';
+  document.getElementById('volumeAtual').value='';
+  resetAll();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
