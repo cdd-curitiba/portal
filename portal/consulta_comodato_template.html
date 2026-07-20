@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta de Comodato</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<style>
+  :root{
+    --bg: #14101f;
+    --bg-soft: #1c1630;
+    --card: #201933;
+    --card-border: #34294f;
+    --purple-1: #7c3aed;
+    --purple-2: #a855f7;
+    --purple-3: #c084fc;
+    --text: #f1eefb;
+    --text-dim: #a99fc4;
+    --text-faint: #6f6489;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: radial-gradient(circle at 15% 0%, #241a3d 0%, var(--bg) 45%), var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px 14px 40px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wrap{ max-width: 880px; margin: 0 auto; }
+
+  .eyebrow{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    font-size:11px; font-weight:700; letter-spacing:.1em;
+    text-transform:uppercase; color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+  .eyebrow .dot{
+    width:6px; height:6px; border-radius:50%;
+    background: var(--purple-3);
+    box-shadow: 0 0 10px rgba(192,132,252,.7);
+    flex-shrink:0;
+  }
+
+  .hero{ text-align:center; margin-bottom: 22px; }
+  .hero h1{
+    font-size: 26px; font-weight: 800; letter-spacing:-.01em;
+    line-height:1.2;
+  }
+  .hero h1 .accent{ color: var(--purple-3); }
+  .hero p{
+    font-size: 13px; color: var(--text-dim); margin-top:8px;
+    padding: 0 8px;
+  }
+
+  .search-bar{
+    display:flex; align-items:center; gap:8px;
+    background: var(--card);
+    border:1.5px solid var(--purple-1);
+    border-radius: 12px;
+    padding: 6px 6px 6px 14px;
+    margin-bottom: 8px;
+    box-shadow: 0 0 0 4px rgba(124,58,237,.12);
+  }
+  .search-bar .ti{ color: var(--purple-3); font-size:17px; flex-shrink:0; }
+  .search-input{
+    flex:1; min-width:0;
+    background:transparent; border:none; outline:none;
+    font-size:16px; font-weight:500; color:var(--text);
+    font-family:inherit; padding:11px 0;
+  }
+  .search-input::placeholder{ color: var(--text-faint); font-weight:400; }
+  .search-btn{
+    flex-shrink:0;
+    background: linear-gradient(135deg, var(--purple-1), var(--purple-2));
+    color:#fff; border:none; cursor:pointer;
+    font-size:13.5px; font-weight:700;
+    padding: 12px 16px; border-radius: 9px;
+    font-family:inherit;
+    min-height:44px;
+  }
+  .search-btn:active{ filter:brightness(1.15); }
+  .search-hint{
+    font-size:12px; color: var(--text-faint);
+    margin-bottom: 18px; padding-left:2px;
+  }
+
+  .empty-state, .not-found{
+    padding: 16px;
+    color: var(--text-faint);
+    background: var(--card);
+    border:1px dashed var(--card-border);
+    border-radius: 14px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .empty-state .ti, .not-found .ti{
+    font-size:20px; color: var(--purple-3);
+    opacity:.8; flex-shrink:0;
+  }
+  .empty-state .txt, .not-found .txt{ display:flex; flex-direction:column; gap:2px; }
+  .empty-state .txt strong, .not-found .txt strong{ color: var(--text); font-size:13.5px; font-weight:700; }
+  .empty-state .txt span, .not-found .txt span{ font-size:12.5px; color: var(--text-dim); }
+  .not-found{ border-style:solid; }
+  .not-found .ti{ color:#f87171; opacity:.85; }
+
+  .card{
+    background: var(--card);
+    border:1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px 14px 4px;
+    margin-bottom: 16px;
+  }
+  .card h2{
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--purple-3);
+    font-weight: 700;
+    margin-bottom: 12px;
+    display:flex; align-items:center; gap:7px;
+  }
+  .card h2 .ti{ font-size:15px; }
+
+  .info-grid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-bottom: 14px;
+  }
+  .info-item{
+    background: var(--bg-soft);
+    border:1px solid var(--card-border);
+    border-radius: 11px;
+    padding: 11px 13px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+  }
+  .info-item .k{ font-size: 11.5px; color: var(--text-faint); flex-shrink:0; }
+  .info-item .v{ font-size: 13.5px; font-weight:600; color: var(--text); text-align:right; }
+
+  .pkg-grid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-bottom: 16px;
+  }
+  .pkg-card{
+    background: linear-gradient(160deg, var(--bg-soft), #17122a);
+    border:1px solid var(--card-border);
+    border-radius: 13px;
+    overflow:hidden;
+  }
+  .pkg-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 11px 14px;
+    background: linear-gradient(135deg, rgba(124,58,237,.28), rgba(168,85,247,.12));
+    border-bottom: 1px solid var(--card-border);
+  }
+  .pkg-head .vol{ font-size:14.5px; font-weight:700; color:#fff; }
+  .pkg-head .decisao{
+    font-size: 10.5px; font-weight:700; padding: 3px 9px;
+    border-radius: 999px; text-transform:uppercase; letter-spacing:.03em;
+    background: rgba(168,85,247,.18); color: var(--purple-3);
+    border: 1px solid rgba(168,85,247,.35);
+    white-space:nowrap;
+  }
+  .pkg-body{ padding: 12px 14px 14px; display:grid; gap:9px; }
+  .pkg-row{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .pkg-row .k{ font-size:12px; color:var(--text-dim); }
+  .pkg-row .v{ font-size:13px; font-weight:600; color:var(--text); text-align:right; }
+
+  footer{
+    text-align:center; font-size:11.5px; color:var(--text-faint);
+    margin-top: 8px; padding: 0 10px;
+  }
+
+  /* Tela de senha */
+  #lockScreen{
+    position:fixed; inset:0; z-index:999;
+    display:flex; align-items:center; justify-content:center;
+    background: radial-gradient(circle at 15% 0%, #241a3d 0%, var(--bg) 45%), var(--bg);
+    padding: 20px;
+  }
+  .lock-box{ max-width: 340px; width:100%; text-align:center; }
+  .lock-icon{
+    width:54px; height:54px; border-radius:14px;
+    background: linear-gradient(135deg, var(--purple-1), var(--purple-3));
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px; color:#fff; margin:0 auto 18px;
+    box-shadow: 0 8px 22px rgba(124,58,237,.35);
+  }
+  .lock-box h2{ font-size:18px; font-weight:700; margin-bottom:6px; }
+  .lock-box p{ font-size:13px; color:var(--text-dim); margin-bottom:20px; }
+  #lockInput{
+    width:100%; background: var(--card); border:1.5px solid var(--card-border);
+    border-radius:12px; padding:13px 16px; color:var(--text);
+    font-size:15px; font-family:inherit; outline:none; text-align:center;
+    margin-bottom:12px;
+  }
+  #lockInput:focus{ border-color: var(--purple-1); }
+  #lockBtn{
+    width:100%; background: linear-gradient(135deg, var(--purple-1), var(--purple-2));
+    color:#fff; border:none; cursor:pointer;
+    font-size:14px; font-weight:700; padding:13px; border-radius:12px;
+    font-family:inherit;
+  }
+  #lockError{ font-size:12.5px; color:#f87171; margin-top:12px; min-height:16px; }
+
+  @media (min-width:640px){
+    body{ padding: 36px 16px 60px; }
+    .eyebrow{ font-size:12px; margin-bottom:18px; }
+    .hero{ margin-bottom:30px; }
+    .hero h1{ font-size:34px; }
+    .hero p{ font-size:14px; padding:0; }
+    .search-bar{ padding:8px 8px 8px 18px; border-radius:14px; margin-bottom:10px; }
+    .search-input{ font-size:15.5px; padding:10px 0; }
+    .search-btn{ font-size:14px; padding:12px 22px; }
+    .search-hint{ margin-bottom:26px; }
+    .card{ padding:22px 22px 8px; border-radius:16px; margin-bottom:22px; }
+    .card h2{ font-size:13px; margin-bottom:16px; }
+    .info-grid{ grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap:14px; }
+    .info-item{ display:block; padding:12px 14px; }
+    .info-item .k{ display:block; text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; }
+    .info-item .v{ text-align:left; font-size:14.5px; }
+    .pkg-grid{ grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; }
+    footer{ font-size:12px; margin-top:10px; }
+  }
+</style>
+</head>
+<body>
+<div id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-icon"><i class="ti ti-lock"></i></div>
+    <h2>Consulta de Comodato</h2>
+    <p>Digite a senha para acessar os dados</p>
+    <input id="lockInput" type="password" placeholder="Senha" autocomplete="off">
+    <button id="lockBtn">Desbloquear</button>
+    <div id="lockError"></div>
+  </div>
+</div>
+
+<div class="wrap" id="mainContent" style="display:none;">
+
+  <div class="eyebrow"><span class="dot"></span> CDD CURITIBA</div>
+
+  <div class="hero">
+    <h1>Consulta de <span class="accent">Comodato</span></h1>
+    <p>Pesquise pelo código do PDV para ver risco e limites por embalagem</p>
+  </div>
+
+  <div class="search-bar">
+    <i class="ti ti-search"></i>
+    <input id="inputCodigo" class="search-input" type="text" placeholder="Código do PDV..." autocomplete="off">
+    <button class="search-btn" onclick="buscar()">Buscar</button>
+  </div>
+  <div class="search-hint">Digite o código do PDV e clique em Buscar</div>
+
+  <div id="msgVazio" class="empty-state">
+    <i class="ti ti-building-store"></i>
+    <div class="txt"><strong>Pronto para buscar</strong><span>Digite o código do PDV e clique em Buscar</span></div>
+  </div>
+
+  <div id="resultado" style="display:none;"></div>
+
+  <footer>Atualizado em __DATA_ATUALIZACAO__</footer>
+
+</div>
+
+<script>
+  // ===== DADOS CRIPTOGRAFADOS INJETADOS PELO PYTHON (gerar_html.py) =====
+  const PAYLOAD_CRIPTO = "__DADOS_PDV_CRIPTO__";
+  const ITERACOES_PBKDF2 = __ITERACOES__;
+  // ========================================================================
+
+  let basePdvs = [];
+
+  function base64ParaBytes(b64) {
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+
+  async function descriptografar(senha) {
+    const payload = base64ParaBytes(PAYLOAD_CRIPTO);
+    const salt = payload.slice(0, 16);
+    const iv = payload.slice(16, 28);
+    const ciphertext = payload.slice(28);
+
+    const encoder = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw", encoder.encode(senha), { name: "PBKDF2" }, false, ["deriveKey"]
+    );
+    const chave = await crypto.subtle.deriveKey(
+      { name: "PBKDF2", salt: salt, iterations: ITERACOES_PBKDF2, hash: "SHA-256" },
+      keyMaterial,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["decrypt"]
+    );
+    const decriptado = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, chave, ciphertext);
+    const texto = new TextDecoder().decode(decriptado);
+    return JSON.parse(texto);
+  }
+
+  const lockScreen = document.getElementById("lockScreen");
+  const mainContent = document.getElementById("mainContent");
+  const lockInput = document.getElementById("lockInput");
+  const lockBtn = document.getElementById("lockBtn");
+  const lockError = document.getElementById("lockError");
+
+  async function tentarDesbloquear() {
+    const senha = lockInput.value;
+    if (!senha) return;
+    lockBtn.disabled = true;
+    lockBtn.textContent = "Verificando...";
+    lockError.textContent = "";
+    try {
+      basePdvs = await descriptografar(senha);
+      lockScreen.style.display = "none";
+      mainContent.style.display = "block";
+    } catch (e) {
+      lockError.textContent = "Senha incorreta. Tente novamente.";
+      lockInput.value = "";
+      lockInput.focus();
+    }
+    lockBtn.disabled = false;
+    lockBtn.textContent = "Desbloquear";
+  }
+
+  lockBtn.addEventListener("click", tentarDesbloquear);
+  lockInput.addEventListener("keydown", e => { if (e.key === "Enter") tentarDesbloquear(); });
+  lockInput.focus();
+
+  const input = document.getElementById("inputCodigo");
+  const msgVazio = document.getElementById("msgVazio");
+  const resultado = document.getElementById("resultado");
+
+  function montarCardEmbalagem(vol, p, linhasExtras) {
+    const linhasPadrao = `
+          <div class="pkg-row"><span class="k">Saldo Atual</span><span class="v">${p.saldo || "-"}</span></div>
+          <div class="pkg-row"><span class="k">Limite Sugerido</span><span class="v">${p.limiteSugerido || "-"}</span></div>
+          <div class="pkg-row"><span class="k">Limite Disponível</span><span class="v">${p.limiteDisponivel || "-"}</span></div>
+          <div class="pkg-row"><span class="k">Chance de Giro</span><span class="v">${p.chanceGiro || "-"}</span></div>`;
+
+    const linhasBarril = `
+          <div class="pkg-row"><span class="k">Saldo Atual</span><span class="v">${p.saldo || "-"}</span></div>
+          <div class="pkg-row"><span class="k">Qnt Vendida</span><span class="v">${p.qntVenda || "-"}</span></div>
+          <div class="pkg-row"><span class="k">Saldo Chopeira</span><span class="v">${p.saldoChopeira || "-"}</span></div>`;
+
+    return `
+      <div class="pkg-card">
+        <div class="pkg-head">
+          <span class="vol">${vol}</span>
+          <span class="decisao">${p.decisao || "-"}</span>
+        </div>
+        <div class="pkg-body">
+          ${linhasExtras === "barril" ? linhasBarril : linhasPadrao}
+        </div>
+      </div>`;
+  }
+
+  function montarTela(pdv) {
+    return `
+      <div class="card">
+        <h2><i class="ti ti-building"></i> Dados do PDV</h2>
+        <div class="info-grid">
+          <div class="info-item"><div class="k">Nome</div><div class="v">${pdv.NomePDV || "-"}</div></div>
+          <div class="info-item"><div class="k">CNPJ</div><div class="v">${pdv.CNPJ || "-"}</div></div>
+          <div class="info-item"><div class="k">Status</div><div class="v">${pdv.Status || "-"}</div></div>
+          <div class="info-item"><div class="k">Status Documentação</div><div class="v">${pdv.StatusDocumentacao || "-"}</div></div>
+          <div class="info-item"><div class="k">Classe de Risco</div><div class="v">${pdv.ClasseRisco || "-"}</div></div>
+          <div class="info-item"><div class="k">Chance de Pagamento</div><div class="v">${pdv.ChancePagamento || "-"}</div></div>
+          <div class="info-item"><div class="k">Lista de Restrição</div><div class="v">${pdv.ListaRestricao || "-"}</div></div>
+          <div class="info-item"><div class="k">Tem Comodato</div><div class="v">${pdv.TemComodato || "-"}</div></div>
+          <div class="info-item"><div class="k">Premissas</div><div class="v">${pdv.Premissas || "-"}</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><i class="ti ti-package"></i> Dados por Embalagem</h2>
+        <div class="pkg-grid">
+          ${montarCardEmbalagem("300ML", {
+            decisao: pdv.Decisao300, saldo: pdv.Saldo300,
+            limiteSugerido: pdv.LimiteSugerido300, limiteDisponivel: pdv.LimiteDisponivel300,
+            chanceGiro: pdv.ChanceGiro300, metaVenda: pdv.MetaVenda300,
+            gapVenda: pdv.GapVenda300, giroMes: pdv.GiroMes300, giroM1: pdv.GiroM1300
+          })}
+          ${montarCardEmbalagem("600ML", {
+            decisao: pdv.Decisao600, saldo: pdv.Saldo600,
+            limiteSugerido: pdv.LimiteSugerido600, limiteDisponivel: pdv.LimiteDisponivel600,
+            chanceGiro: pdv.ChanceGiro600, metaVenda: pdv.MetaVenda600,
+            gapVenda: pdv.GapVenda600, giroMes: pdv.GiroMes600, giroM1: pdv.GiroM1600
+          })}
+          ${montarCardEmbalagem("1L", {
+            decisao: pdv.Decisao1L, saldo: pdv.Saldo1L,
+            limiteSugerido: pdv.LimiteSugerido1L, limiteDisponivel: pdv.LimiteDisponivel1L,
+            chanceGiro: pdv.ChanceGiro1L, metaVenda: pdv.MetaVenda1L,
+            gapVenda: pdv.GapVenda1L, giroMes: pdv.GiroMes1L, giroM1: pdv.GiroM11L
+          })}
+          ${pdv.DecisaoBARRIL !== undefined ? montarCardEmbalagem("BARRIL", {
+            decisao: pdv.DecisaoBARRIL, saldo: pdv.SaldoBARRIL,
+            metaVenda: pdv.MetaVendaBARRIL, qntVenda: pdv.QntVendaBARRIL,
+            gapVenda: pdv.GapVendaBARRIL, giroMes: pdv.GiroMesBARRIL,
+            giroM1: pdv.GiroM1BARRIL, saldoChopeira: pdv.SaldoChopeiraBARRIL
+          }, "barril") : ""}
+        </div>
+      </div>`;
+  }
+
+  function buscar() {
+    const codigo = input.value.trim().toLowerCase();
+
+    if (!codigo) {
+      msgVazio.style.display = "flex";
+      msgVazio.className = "empty-state";
+      msgVazio.innerHTML = `<i class="ti ti-building-store"></i><div class="txt"><strong>Pronto para buscar</strong><span>Digite o código do PDV e clique em Buscar</span></div>`;
+      resultado.style.display = "none";
+      resultado.innerHTML = "";
+      return;
+    }
+
+    const pdv = basePdvs.find(p => (p.CodigoPDV || "").toLowerCase() === codigo);
+
+    if (!pdv) {
+      msgVazio.style.display = "flex";
+      msgVazio.className = "not-found";
+      msgVazio.innerHTML = `<i class="ti ti-mood-empty"></i><div class="txt"><strong>Não encontrado</strong><span>Nenhum PDV com esse código</span></div>`;
+      resultado.style.display = "none";
+      resultado.innerHTML = "";
+      return;
+    }
+
+    msgVazio.style.display = "none";
+    resultado.style.display = "block";
+    resultado.innerHTML = montarTela(pdv);
+  }
+
+  // Busca só ao clicar em "Buscar" ou apertar Enter — sem sugestão ao digitar
+  input.addEventListener("keydown", e => { if (e.key === "Enter") buscar(); });
+</script>
+</body>
+</html>
